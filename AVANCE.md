@@ -2,6 +2,7 @@
 **Aplicación web con IA para la gestión documental en Mipymes de Bucaramanga**
 
 - **Tech Lead:** ProyectoMarioJacome
+- **Repositorio:** https://github.com/mandresjacome/proyectoUTS
 - **Fecha de última actualización:** 24 de abril de 2026
 - **Fase actual:** 2 — Estructura y Arquitectura ✅ Completada
 
