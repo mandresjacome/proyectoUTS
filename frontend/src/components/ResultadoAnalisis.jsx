@@ -1,6 +1,6 @@
 // Componente para mostrar el resultado del análisis de la IA.
-// Responsabilidad: presentar los datos devueltos por el backend y
-// ofrecer al usuario el botón de confirmación (Human-in-the-Loop).
+// Responsabilidad: presentar de forma legible los datos estructurados
+// devueltos por Gemini y ofrecer al usuario el botón de confirmación (HITL).
 // NUNCA ejecuta acciones finales por sí solo — solo notifica al padre.
 
 import React from 'react';
@@ -8,30 +8,61 @@ import React from 'react';
 /**
  * ResultadoAnalisis
  * Props:
- *   - datos: objeto con el resultado del análisis (tipo, datosRelevantes, sugerenciaRespuesta)
- *   - onConfirmar: función del componente padre que maneja la acción final
+ *   - datos: objeto del backend con forma { mensaje, datos: { tipo, resumen, datosRelevantes, sugerenciaRespuesta } }
+ *   - onConfirmar: función del componente padre que ejecuta la acción final tras revisión del usuario
  *   - cargando: boolean que deshabilita el botón mientras hay una petición en curso
  */
 const ResultadoAnalisis = ({ datos, onConfirmar, cargando }) => {
+  // Extraer el análisis de Gemini del objeto de respuesta del backend
+  const analisis = datos.datos || {};
+
   return (
-    <section aria-label="Resultado del análisis">
+    <section className="card" aria-label="Resultado del análisis">
       <h2>Resultado del Análisis</h2>
 
-      {/* Mostrar el mensaje orientativo del backend */}
-      {datos.mensaje && <p>{datos.mensaje}</p>}
+      {/* Tipo de documento detectado por Gemini */}
+      {analisis.tipo && (
+        <div className="ficha-resultado">
+          <h3>Tipo de documento</h3>
+          <span className="badge-tipo">{analisis.tipo}</span>
+        </div>
+      )}
 
-      {/* Sección de datos extraídos por la IA — se completará en Fase 4 */}
-      {datos.datos && (
-        <pre style={{ background: '#f4f4f4', padding: '1rem' }}>
-          {JSON.stringify(datos.datos, null, 2)}
-        </pre>
+      {/* Resumen del contenido del documento */}
+      {analisis.resumen && (
+        <div className="ficha-resultado">
+          <h3>Resumen</h3>
+          <p>{analisis.resumen}</p>
+        </div>
+      )}
+
+      {/* Datos relevantes detectados en el documento */}
+      {analisis.datosRelevantes?.descripcion && (
+        <div className="ficha-resultado">
+          <h3>Datos relevantes</h3>
+          <p>{analisis.datosRelevantes.descripcion}</p>
+        </div>
+      )}
+
+      {/* Sugerencia de respuesta generada por la IA para revisión del usuario.
+          Este es el insumo principal del flujo HITL: el usuario lee la sugerencia
+          y decide si la aprueba antes de ejecutar cualquier acción. */}
+      {analisis.sugerenciaRespuesta && analisis.sugerenciaRespuesta !== 'null' && (
+        <div className="ficha-resultado">
+          <h3>Sugerencia de respuesta (generada por IA — revise antes de confirmar)</h3>
+          <p>{analisis.sugerenciaRespuesta}</p>
+        </div>
       )}
 
       {/* Botón de confirmación HITL:
-          El usuario debe revisar el resultado y decidir si confirma la acción.
-          Este botón es la única vía para ejecutar la acción final — nunca es automático. */}
-      <button onClick={onConfirmar} disabled={cargando}>
-        Confirmar y continuar
+          Solo el usuario puede disparar la acción final.
+          El texto es explícito sobre lo que ocurrirá al confirmar. */}
+      <button
+        className="btn-confirmar"
+        onClick={onConfirmar}
+        disabled={cargando}
+      >
+        ✓ He revisado el análisis — Confirmar y guardar
       </button>
     </section>
   );

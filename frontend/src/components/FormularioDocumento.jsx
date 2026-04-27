@@ -67,10 +67,13 @@ const FormularioDocumento = ({ onEnviar, cargando }) => {
   };
 
   return (
-    <form onSubmit={manejarEnvio}>
-      <label htmlFor="documento">Seleccionar documento (PDF, PNG, JPEG, TIFF — máx. 10 MB):</label>
+    <form className="card" onSubmit={manejarEnvio}>
+      <label className="input-archivo-label" htmlFor="documento">
+        Seleccionar documento (PDF, PNG, JPEG, TIFF — máx. 10 MB):
+      </label>
       <input
         id="documento"
+        className="input-archivo"
         type="file"
         accept=".pdf,.png,.jpg,.jpeg,.tiff,.tif"
         onChange={manejarCambioArchivo}
@@ -78,9 +81,11 @@ const FormularioDocumento = ({ onEnviar, cargando }) => {
       />
 
       {/* Error de validación del cliente */}
-      {errorValidacion && <p role="alert" style={{ color: 'red' }}>{errorValidacion}</p>}
+      {errorValidacion && (
+        <p className="alerta-error" role="alert">{errorValidacion}</p>
+      )}
 
-      <button type="submit" disabled={!archivo || cargando}>
+      <button className="btn-primario" type="submit" disabled={!archivo || cargando}>
         {cargando ? 'Analizando...' : 'Analizar documento'}
       </button>
     </form>

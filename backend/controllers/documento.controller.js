@@ -42,14 +42,36 @@ const analizar = async (req, res, next) => {
 
 /**
  * confirmar — POST /api/documentos/confirmar
- * Se ejecuta SOLO cuando el usuario aprueba explícitamente la acción desde el frontend.
- * Este endpoint representa el paso de confirmación del flujo Human-in-the-Loop.
- * Pendiente de implementar en la fase de integración Gemini + UI.
+ * Se ejecuta SOLO cuando el usuario aprueba explícitamente el resultado desde el frontend.
+ * Representa el cierre del ciclo Human-in-the-Loop: el usuario leyó el análisis de la IA,
+ * tomó una decisión informada y autorizó la acción final.
+ *
+ * Por ahora registra la confirmación y devuelve los datos aprobados.
+ * En iteraciones futuras este endpoint puede extenderse para:
+ * - Guardar el registro de confirmación en base de datos
+ * - Generar un PDF con la respuesta aprobada
+ * - Notificar a otros sistemas internos (nunca de forma autónoma hacia clientes)
  */
 const confirmar = async (req, res, next) => {
   try {
-    // TODO: Implementar lógica de acción final en Fase 4 (Integración Gemini + UI)
-    res.status(200).json({ mensaje: 'Acción confirmada por el usuario.' });
+    // Los datos del análisis aprobado llegan en el cuerpo de la petición
+    const { datos, mensaje } = req.body;
+
+    // Validar que se recibió el análisis a confirmar
+    if (!datos) {
+      const error = new Error('No se recibieron datos del análisis para confirmar.');
+      error.status = 400;
+      return next(error);
+    }
+
+    // Registrar en consola la confirmación (en producción esto iría a un logger)
+    console.log(`[HITL] Usuario confirmó análisis de documento tipo: ${datos.tipo || 'desconocido'}`);
+
+    // Devolver confirmación al frontend con los datos aprobados
+    res.status(200).json({
+      mensaje: 'Análisis confirmado correctamente por el usuario.',
+      datosConfirmados: datos,
+    });
   } catch (error) {
     next(error);
   }
