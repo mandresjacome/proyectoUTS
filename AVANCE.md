@@ -3,8 +3,8 @@
 
 - **Tech Lead:** ProyectoMarioJacome
 - **Repositorio:** https://github.com/mandresjacome/proyectoUTS
-- **Fecha de última actualización:** 24 de abril de 2026
-- **Fase actual:** 3 y 4 (backend) — OCR + Gemini API ✅ Completados. UI React ⏳ Pendiente
+- **Fecha de última actualización:** 27 de abril de 2026
+- **Fase actual:** Fases 1–4 completadas ✅ — Sistema end-to-end funcional en producción local
 
 ---
 
@@ -15,7 +15,7 @@
 | 1 | Análisis de documentos | ✅ Completada |
 | 2 | Estructura y Arquitectura | ✅ Completada |
 | 3 | OCR con Google Cloud Document AI | ✅ Completada |
-| 4 | Integración Gemini API y UI React | 🔄 En progreso (backend ✅ — UI ⏳) |
+| 4 | Integración Gemini API y UI React | ✅ Completada |
 | 5 | Evaluación | ⏳ Pendiente |
 
 ---
@@ -190,7 +190,7 @@ DOCUMENT_AI_PROCESSOR_ID=37b66121a8efb8f2
 
 ---
 
-## Fase 4 — Integración Gemini API y UI React 🔄
+## Fase 4 — Integración Gemini API y UI React ✅
 
 ### 4.1 Backend — Gemini API ✅
 
@@ -201,7 +201,7 @@ GEMINI_API_KEY=*** (configurada localmente, no en repositorio)
 
 **Implementación de `gemini.service.js`:**
 - Recibe el texto extraído por el servicio OCR.
-- Envía un prompt estructurado a `gemini-2.0-flash` mediante el SDK `@google/genai`.
+- Envía un prompt estructurado a `gemini-2.5-flash` mediante el SDK `@google/genai`.
 - El prompt instruye al modelo a responder **solo con JSON válido** (sin markdown) con esta estructura:
   ```json
   {
@@ -211,15 +211,36 @@ GEMINI_API_KEY=*** (configurada localmente, no en repositorio)
     "sugerenciaRespuesta": "borrador de respuesta profesional o null"
   }
   ```
-- La respuesta se parsea con `JSON.parse()` y se devuelve al controlador.
+- La respuesta se limpia de bloques markdown antes del parseo (algunos modelos los incluyen
+  a pesar de que el prompt lo prohíbe) y se parsea con `JSON.parse()`.
 - El resultado **siempre va al frontend para revisión del usuario** antes de cualquier acción (HITL).
 
-### 4.2 Frontend — UI React ⏳ Pendiente
+**Nota:** Se requirió recargar créditos en AI Studio (plan de pago) para habilitar el acceso.
+El modelo `gemini-2.0-flash` fue deprecado para nuevos usuarios; se migró a `gemini-2.5-flash`.
 
-Los componentes base ya existen (creados en Fase 2) pero están pendientes de:
-- Conectar con el backend real (actualmente usan stubs)
-- Refinar la presentación del JSON de análisis de Gemini
-- Implementar el flujo de confirmación (`/api/documentos/confirmar`)
+### 4.2 Frontend — UI React ✅
+
+Todos los componentes implementados y probados con flujo end-to-end exitoso:
+
+| Componente | Estado |
+|-----------|--------|
+| `PaginaAnalisis.jsx` | ✅ Flujo HITL completo (subida → análisis → confirmación) |
+| `FormularioDocumento.jsx` | ✅ Validación en cliente + subida multipart |
+| `ResultadoAnalisis.jsx` | ✅ Fichas de análisis + botón confirmar HITL |
+| `documento.service.js` | ✅ Fetch a `/analizar` y `/confirmar` |
+| `index.css` | ✅ Estilos completos con diseño UTS |
+
+### 4.3 Prueba end-to-end exitosa ✅ — 27 de abril de 2026
+
+**Documento de prueba:** PQRS — Derecho de Petición (Carlos Arturo Gómez, C.C. 13.555.444)
+
+**Flujo validado:**
+1. Usuario sube PDF en `http://localhost:5173`
+2. Backend recibe el archivo en buffer RAM (Zero Storage)
+3. OCR extrae el texto completo del documento
+4. Gemini analiza y devuelve JSON estructurado
+5. Frontend muestra: tipo `PQRS (Petición/Reclamo)`, resumen, datos relevantes y carta de respuesta profesional completa
+6. Usuario revisa y puede confirmar con el botón HITL
 
 ---
 
@@ -237,12 +258,11 @@ Se configuró **npm workspaces** con un `package.json` raíz para gestionar ambo
 
 ---
 
-## Próximos pasos — Fase 4 (UI React)
+## Próximos pasos — Fase 5 (Evaluación)
 
-1. Refinar `ResultadoAnalisis.jsx` para mostrar el JSON de Gemini de forma legible.
-2. Implementar el endpoint `POST /api/documentos/confirmar` en el controlador.
-3. Conectar el botón de confirmación del frontend con ese endpoint.
-4. Hacer pruebas end-to-end con documentos reales.
+1. Preparar documentos de prueba variados (facturas, contratos, cartas).
+2. Evaluar precisión del OCR y calidad de las respuestas de Gemini.
+3. Documentar resultados de la evaluación en esta bitácora.
 
 ---
 

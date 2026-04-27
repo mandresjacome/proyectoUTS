@@ -1,4 +1,4 @@
-// Servicio de análisis usando Google Gemini API.
+// Servicio de análisis usando Google Gemini API (AI Studio).
 // Responsabilidad única: recibir texto plano extraído por OCR y devolver un
 // análisis estructurado en JSON con clasificación, datos clave y sugerencia de respuesta.
 // La respuesta se devuelve al frontend para que el usuario la revise (Human-in-the-Loop).
@@ -13,9 +13,10 @@ const { GoogleGenAI } = require('@google/genai');
 // evitando crear una instancia nueva en cada petición HTTP.
 const genai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-// Nombre del modelo a usar. gemini-2.0-flash ofrece el mejor balance entre
-// velocidad, costo y capacidad para tareas de clasificación de documentos.
-const MODELO = 'gemini-2.0-flash';
+// Modelo seleccionado: gemini-2.5-flash vía AI Studio con API key.
+// gemini-2.0-flash fue deprecado para nuevos usuarios; gemini-2.5-flash es
+// el sucesor estable con mejores capacidades de análisis de texto.
+const MODELO = 'gemini-2.5-flash';
 
 /**
  * analizarTexto — envía el texto extraído por OCR a Gemini para su análisis.
@@ -68,10 +69,19 @@ ${texto}`;
   // Extraer el texto de la respuesta del modelo
   const textoRespuesta = resultado.text;
 
+  // Limpiar la respuesta antes de parsear.
+  // Algunos modelos (como gemini-2.5-flash) envuelven el JSON en bloques de
+  // código markdown (```json ... ```) a pesar de que el prompt lo prohíbe.
+  // Se extrae solo el contenido entre llaves para garantizar un JSON válido.
+  const textoLimpio = textoRespuesta
+    .replace(/^```(?:json)?\s*/i, '')  // Eliminar apertura de bloque markdown
+    .replace(/\s*```$/i, '')           // Eliminar cierre de bloque markdown
+    .trim();
+
   // Parsear la respuesta como JSON.
   // Si Gemini devuelve texto que no es JSON válido, JSON.parse lanzará un error
   // que será capturado por el try/catch del controlador y enviado al errorHandler.
-  const analisisJSON = JSON.parse(textoRespuesta);
+  const analisisJSON = JSON.parse(textoLimpio);
 
   return analisisJSON;
 };
